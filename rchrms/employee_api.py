@@ -922,30 +922,67 @@ def delete_attendance_request():
         frappe.response["data"]=None
 ######Attendance Request API Ends ################
 
+# @frappe.whitelist(allow_guest=False)
+# def get_leave_dashboard(employee, date=None):
+#     from hrms.hr.doctype.leave_application.leave_application import get_leave_details
+
+#     try:
+#         if not date:
+#             date = frappe.utils.today()
+
+#         result = get_leave_details(employee=employee, date=date)
+
+#         leave_allocation = result.get("leave_allocation", {})
+#         lwps = result.get("lwps", [])
+        
+#         frappe.response["status"]=True
+#         frappe.response["message"]="Leave dashboard data fetched"
+#         frappe.response["data"]={
+#                 "leave_allocation": leave_allocation,
+#                 "lwps": lwps,
+#                 "allowed_leave_types": list(leave_allocation.keys()) + lwps
+#             }
+
+#     except Exception as e:
+#         frappe.response["status"]=False
+#         frappe.response["message"]=str(e)
+#         frappe.response["data"]=None
+
 @frappe.whitelist(allow_guest=False)
-def get_leave_dashboard(employee, date=None):
+def get_leave_dashboard(employee=None, date=None):
     from hrms.hr.doctype.leave_application.leave_application import get_leave_details
 
     try:
+        # If employee is not provided, fetch from session
+        if not employee:
+            user = frappe.session.user
+            employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+            if not employee:
+                frappe.response["status"] = False
+                frappe.response["message"] = "No Employee linked with this user"
+                frappe.response["data"] = None
+                return
+
+        # Set date to today if not provided
         if not date:
             date = frappe.utils.today()
 
+        # Get leave details
         result = get_leave_details(employee=employee, date=date)
-
         leave_allocation = result.get("leave_allocation", {})
         lwps = result.get("lwps", [])
-        
-        frappe.response["status"]=True
-        frappe.response["message"]="Leave dashboard data fetched"
-        frappe.response["data"]={
-                "leave_allocation": leave_allocation,
-                "lwps": lwps,
-                "allowed_leave_types": list(leave_allocation.keys()) + lwps
-            }
+
+        frappe.response["status"] = True
+        frappe.response["message"] = "Leave dashboard data fetched"
+        frappe.response["data"] = {
+            "leave_allocation": leave_allocation,
+            "lwps": lwps,
+            "allowed_leave_types": list(leave_allocation.keys()) + lwps
+        }
 
     except Exception as e:
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        frappe.response["status"] = False
+        frappe.response["message"] = str(e)
+        frappe.response["data"] = None
 
 
