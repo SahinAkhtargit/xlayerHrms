@@ -365,7 +365,7 @@ def get_leave_applications(employee=None):
         frappe.response["data"]=None
 
 @frappe.whitelist(allow_guest=False)
-def create_leave_application():
+def create_leave_application_for_admin():
     try:
         data = frappe.local.form_dict
 
@@ -400,6 +400,57 @@ def create_leave_application():
         frappe.response["status"]=False
         frappe.response["message"]=str(e)
         frappe.response["data"]=None
+
+
+@frappe.whitelist(allow_guest=False)
+def create_leave_application():
+    try:
+        data = frappe.local.form_dict
+
+        # Get the logged-in user
+        user = frappe.session.user
+
+        # Get the employee linked to this user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
+
+        # Required fields excluding employee since we take it from session
+        required_fields = ["leave_type", "from_date", "to_date"]
+        for field in required_fields:
+            if not data.get(field):
+                frappe.response["status"] = False
+                frappe.response["message"] = f"Missing required field: {field}"
+                frappe.response["data"] = None
+                return
+
+        # Create Leave Application
+        doc = frappe.new_doc("Leave Application")
+        doc.employee = employee
+        doc.leave_type = data.get("leave_type")
+        doc.from_date = data.get("from_date")
+        doc.to_date = data.get("to_date")
+        doc.company = data.get("company")
+        doc.half_day = int(data.get("half_day") or 0)
+        doc.half_day_date = data.get("half_day_date") if doc.half_day else None
+        doc.description = data.get("description") or ""
+
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        frappe.response["status"] = True
+        frappe.response["message"] = "Leave Application created successfully"
+        frappe.response["data"] = {"name": doc.name}
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.response["status"] = False
+        frappe.response["message"] = str(e)
+        frappe.response["data"] = None
+
 
 @frappe.whitelist(allow_guest=False)
 def update_leave_application():
