@@ -407,10 +407,8 @@ def create_leave_application():
     try:
         data = frappe.local.form_dict
 
-        # Get the logged-in user
         user = frappe.session.user
 
-        # Get the employee linked to this user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
             frappe.response["status"] = False
@@ -418,7 +416,6 @@ def create_leave_application():
             frappe.response["data"] = None
             return
 
-        # Required fields excluding employee since we take it from session
         required_fields = ["leave_type", "from_date", "to_date"]
         for field in required_fields:
             if not data.get(field):
@@ -571,6 +568,75 @@ def get_work_from_home_request(employee=None):
 def create_work_from_home_requests():
     try:
         data = frappe.local.form_dict
+        user = frappe.session.user
+
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
+
+        required_fields = ["from_date", "to_date", "reason"]
+        for field in required_fields:
+            if not data.get(field):
+                frappe.response["status"] = False
+                frappe.response["message"] = f"Missing required field: {field}"
+                frappe.response["data"] = None
+                return  # Exit early if a required field is missing
+
+        # Check for duplicate WFH requests with overlapping dates
+        duplicate = frappe.db.sql("""
+            SELECT name FROM `tabRequest Work From Home`
+            WHERE employee = %s
+            AND (
+                (from_date <= %s AND to_date >= %s) OR
+                (from_date <= %s AND to_date >= %s) OR
+                (from_date >= %s AND to_date <= %s)
+            )
+        """, (
+            data.get("employee"),
+            data.get("from_date"), data.get("from_date"),
+            data.get("to_date"), data.get("to_date"),
+            data.get("from_date"), data.get("to_date")
+        ), as_dict=True)
+
+        if duplicate:
+            frappe.response["status"] = False
+            frappe.response["message"] = "Duplicate WFH request exists for the selected dates."
+            frappe.response["data"] = None
+            return
+
+        # Create new request
+        doc = frappe.new_doc("Request Work From Home")
+        doc.employee = data.get("employee")
+        doc.from_date = data.get("from_date")
+        doc.to_date = data.get("to_date")
+        doc.reason = data.get("reason")
+        doc.work_details = data.get("work_details")
+
+        if data.get("request_approver"):
+            doc.request_approver = data.get("request_approver")
+
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        frappe.response["status"] = True
+        frappe.response["message"] = "Request Work From Home created successfully"
+        frappe.response["data"] = {
+            "name": doc.name
+        }
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.response["status"] = False
+        frappe.response["message"] = str(e)
+        frappe.response["data"] = None
+
+@frappe.whitelist(allow_guest=False)
+def create_work_from_home_requests_for_admin():
+    try:
+        data = frappe.local.form_dict
 
         required_fields = ["employee", "from_date", "to_date", "reason"]
         for field in required_fields:
@@ -627,6 +693,7 @@ def create_work_from_home_requests():
         frappe.response["status"] = False
         frappe.response["message"] = str(e)
         frappe.response["data"] = None
+
 
 
 @frappe.whitelist(allow_guest=False)
