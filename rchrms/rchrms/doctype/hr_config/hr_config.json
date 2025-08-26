@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-29 13:23:44.482357",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "wfh_last_request_time",
+  "geo_location_section",
+  "geo_location_required",
+  "latitude",
+  "longitude",
+  "allowed_area"
+ ],
+ "fields": [
+  {
+   "fieldname": "wfh_last_request_time",
+   "fieldtype": "Time",
+   "label": "WFH Last Request Time"
+  },
+  {
+   "fieldname": "geo_location_section",
+   "fieldtype": "Section Break",
+   "label": "Geo Location"
+  },
+  {
+   "default": "0",
+   "fieldname": "geo_location_required",
+   "fieldtype": "Check",
+   "label": "Geo Location Required"
+  },
+  {
+   "depends_on": "eval:doc.geo_location_required==1",
+   "fieldname": "latitude",
+   "fieldtype": "Float",
+   "label": "Latitude",
+   "precision": "7"
+  },
+  {
+   "depends_on": "eval:doc.geo_location_required==1",
+   "fieldname": "longitude",
+   "fieldtype": "Float",
+   "label": "Longitude",
+   "precision": "7"
+  },
+  {
+   "description": "Unit: Metres",
+   "fieldname": "allowed_area",
+   "fieldtype": "Int",
+   "label": "Allowed Area"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-08-11 17:59:04.232256",
+ "modified_by": "Administrator",
+ "module": "Rchrms",
+ "name": "HR Config",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

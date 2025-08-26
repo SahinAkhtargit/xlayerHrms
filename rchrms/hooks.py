@@ -8,6 +8,27 @@ app_license = "mit"
 # Apps
 # ------------------
 
+scheduler_events = {
+    "cron": {
+        "27 21 * * *": ["rchrms.autoCheckOut.auto_checkout"],
+        # "30 22 * * *": ["rchrms.autoCheckOut.autoAttendance"],
+    },
+    "daily": [
+        "rchrms.autoCheckOut.autoAttendance"
+    ]
+}
+
+doc_events = {
+    "Leave Application": {
+        "on_submit": "rchrms.leaveAttendance.update_attendance_on_leave_submit"
+    }
+}
+
+override_doctype_class = {
+    "Leave Application": "rchrms.leaveAttendance.CustomLeaveApplication"
+}
+
+
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
