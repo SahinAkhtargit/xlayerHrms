@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-04 16:26:41.142943",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "doc_link",
+  "employee",
+  "designation",
+  "late_early_validation",
+  "image_required"
+ ],
+ "fields": [
+  {
+   "fieldname": "doc_link",
+   "fieldtype": "Link",
+   "label": "Doc Link",
+   "options": "Attendance Permission"
+  },
+  {
+   "columns": 2,
+   "fetch_from": "doc_link.employee",
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "columns": 2,
+   "fetch_from": "doc_link.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Designation",
+   "options": "Designation"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fetch_from": "doc_link.late_early_validation",
+   "fieldname": "late_early_validation",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "late_early_validation"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fetch_from": "doc_link.image_required",
+   "fieldname": "image_required",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Image Required?"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-09-04 16:43:13.768136",
+ "modified_by": "Administrator",
+ "module": "Rchrms",
+ "name": "CheckInOut Config Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

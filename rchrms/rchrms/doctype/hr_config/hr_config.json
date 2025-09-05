@@ -10,7 +10,9 @@
   "geo_location_required",
   "latitude",
   "longitude",
-  "allowed_area"
+  "allowed_area",
+  "attendance_configuration_section",
+  "attendance_config_data"
  ],
  "fields": [
   {
@@ -48,12 +50,23 @@
    "fieldname": "allowed_area",
    "fieldtype": "Int",
    "label": "Allowed Area"
+  },
+  {
+   "fieldname": "attendance_configuration_section",
+   "fieldtype": "Section Break",
+   "label": "Attendance Configuration"
+  },
+  {
+   "fieldname": "attendance_config_data",
+   "fieldtype": "Table",
+   "label": "Attendance Config data",
+   "options": "CheckInOut Config Table"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-08-11 17:59:04.232256",
+ "modified": "2025-09-04 16:48:51.640446",
  "modified_by": "Administrator",
  "module": "Rchrms",
  "name": "HR Config",
