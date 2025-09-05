@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from datetime import datetime, date, timedelta
-
+from frappe.utils import getdate
 #class RequestWorkFromHome(Document):
 #	pass
 class RequestWorkFromHome(Document):
@@ -13,7 +13,18 @@ class RequestWorkFromHome(Document):
             self.name = f"{self.employee}-{self.from_date}"
         else:
             frappe.throw("Both Employee and Dates are required for naming")
+    def before_save(self):
+        if self.from_date and self.to_date:
+            from_date = getdate(self.from_date)
+            to_date = getdate(self.to_date)
 
+            diff = (to_date - from_date).days + 1
+
+            if diff > 0:
+                self.days = diff
+            else:
+                self.days = 0
+                frappe.throw("To Date must be after From Date")
 
 
     def validate(self):
