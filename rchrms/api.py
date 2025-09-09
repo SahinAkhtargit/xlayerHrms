@@ -18,6 +18,11 @@ def custom_error_handler(e):
 @frappe.whitelist( allow_guest=True )
 def login(usr, pwd):
     try:
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         login_manager = frappe.auth.LoginManager()
         login_manager.authenticate(user=usr, pwd=pwd)
         login_manager.post_login()
@@ -72,6 +77,11 @@ def generate_keys(user):
 
 @frappe.whitelist( allow_guest=True )
 def logout():
+    if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
     user = frappe.session.user
 
     if user == "Guest":
@@ -100,6 +110,11 @@ def logout():
 def get_User(username=None, status=None):
     # authenticate()
     try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
         if username:
             Branch = frappe.get_doc("User", username)
             frappe.response["status"]=True
@@ -127,6 +142,11 @@ def get_User(username=None, status=None):
 def update_user(email, **kwargs):
     # authenticate()  # Uncomment if needed
     try:
+        if frappe.request.method != "PUT":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
+            frappe.local.response["data"] = None
         if not frappe.db.exists("User", email):
             frappe.response["status"] = False
             frappe.response["message"] = "User not found"
