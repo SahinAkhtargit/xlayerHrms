@@ -18,6 +18,7 @@ def create_employee(**kwargs):
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         if kwargs.get("personal_email") and frappe.db.exists("Employee", {"personal_email": kwargs.get("personal_email")}):
             frappe.response["status"] = False
             frappe.response["message"] = "Duplicate entry not allowed: personal_email already exists"
@@ -72,6 +73,7 @@ def get_all_employees(email=None):
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
@@ -104,6 +106,7 @@ def update_employee(name, **kwargs):
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
             frappe.local.response["data"] = None
+            return
         if not frappe.db.exists("Employee", name):
             frappe.response["status"] = False
             frappe.response["message"] = "Employee not found"
@@ -138,6 +141,7 @@ def delete_employee(name):
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
             frappe.local.response["data"] = None
+            return
         if not frappe.db.exists("Employee", name):
             frappe.response["status"] = False
             frappe.response["message"] = "Employee not found"
@@ -243,6 +247,7 @@ def create_employee_checkin():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
@@ -358,6 +363,7 @@ def get_employee_attendance():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
@@ -406,6 +412,7 @@ def get_leave_applications():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
@@ -463,6 +470,7 @@ def create_leave_application_for_admin():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         required_fields = ["employee", "leave_type", "from_date", "to_date"]
@@ -506,6 +514,7 @@ def create_leave_application():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         user = frappe.session.user
@@ -557,6 +566,7 @@ def update_leave_application():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -597,6 +607,7 @@ def delete_leave_application():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -639,6 +650,7 @@ def get_work_from_home_request():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
@@ -694,6 +706,7 @@ def create_work_from_home_requests():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
         user = frappe.session.user
 
@@ -768,6 +781,7 @@ def create_work_from_home_requests_for_admin():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         required_fields = ["employee", "from_date", "to_date", "reason"]
@@ -836,6 +850,7 @@ def update_work_from_home_request():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -881,6 +896,7 @@ def delete_work_from_home_request():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -922,6 +938,7 @@ def get_attendance_requests():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
@@ -979,6 +996,7 @@ def post_attendance_request():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
@@ -1036,6 +1054,7 @@ def update_attendance_request():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -1075,6 +1094,7 @@ def delete_attendance_request():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
             frappe.local.response["data"] = None
+            return
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -1108,6 +1128,7 @@ def get_leave_allocation():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
 
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")

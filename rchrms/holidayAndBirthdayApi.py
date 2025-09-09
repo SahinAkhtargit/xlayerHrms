@@ -10,6 +10,7 @@ def get_holiday_list():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
@@ -57,6 +58,7 @@ def get_employee_birthdays():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         today = datetime.today().date()
         next_year = today + timedelta(days=365)
 

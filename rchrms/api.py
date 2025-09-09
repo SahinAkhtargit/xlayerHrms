@@ -23,6 +23,7 @@ def login(usr, pwd):
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
         login_manager = frappe.auth.LoginManager()
         login_manager.authenticate(user=usr, pwd=pwd)
         login_manager.post_login()
@@ -82,6 +83,7 @@ def logout():
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
+            return
     user = frappe.session.user
 
     if user == "Guest":
@@ -115,6 +117,7 @@ def get_User(username=None, status=None):
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
+            return
         if username:
             Branch = frappe.get_doc("User", username)
             frappe.response["status"]=True
@@ -147,6 +150,7 @@ def update_user(email, **kwargs):
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
             frappe.local.response["data"] = None
+            return
         if not frappe.db.exists("User", email):
             frappe.response["status"] = False
             frappe.response["message"] = "User not found"
