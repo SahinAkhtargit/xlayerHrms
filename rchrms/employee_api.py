@@ -184,8 +184,15 @@ def get_employee_checkins(employee=None, log_type=None):
 def create_employee_checkin():
     try:
         data = frappe.local.form_dict
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
 
-        required_fields = ["employee", "log_type", "time"]
+        required_fields = ["log_type", "time"]
         for field in required_fields:
             if not data.get(field):
                 frappe.response["status"] = False
@@ -219,7 +226,7 @@ def create_employee_checkin():
                 return
 
         doc = frappe.new_doc("Employee Checkin")
-        doc.employee = data.get("employee")
+        doc.employee = employee
         doc.log_type = data.get("log_type") 
         doc.time = data.get("time")
         doc.latitude = data.get("latitude")

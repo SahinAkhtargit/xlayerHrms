@@ -5,6 +5,16 @@ from frappe.utils import strip_html
 @frappe.whitelist(allow_guest=True)
 def get_holiday_list(employee=None, holiday_list_name=None):
     try:
+        if not employee and not holiday_list_name:
+            user = frappe.session.user
+            employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+            if not employee:
+                frappe.response["status"] = False
+                frappe.response["message"] = "No Employee linked with this user"
+                frappe.response["data"] = None
+                return
+            employee_doc = frappe.get_doc("Employee", employee)
+            holiday_list_name = employee_doc.holiday_list
         if employee and not holiday_list_name:
             employee_doc = frappe.get_doc("Employee", employee)
             holiday_list_name = employee_doc.holiday_list
