@@ -2,32 +2,88 @@ import frappe
 from datetime import datetime, timedelta
 from frappe.utils import strip_html
 
-@frappe.whitelist(allow_guest=True)
+# @frappe.whitelist(allow_guest=True)
+# def get_holiday_list():
+#     try:
+#         if frappe.request.method != "GET":
+#             frappe.local.response["http_status_code"] = 405
+#             frappe.local.response["status"] = False
+#             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+#             frappe.local.response["data"] = None
+#             return
+#         user = frappe.session.user
+#         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+#         if not employee:
+#             frappe.response["status"] = False
+#             frappe.response["message"] = "No Employee linked with this user"
+#             frappe.response["data"] = None
+#             return
+#         if employee:
+#             employee_doc = frappe.get_doc("Employee", employee)
+#             holiday_list_name = employee_doc.holiday_list
+
+#         if not holiday_list_name:
+#             frappe.response["status"] = False
+#             frappe.response["message"] = "No holiday list found for given input"
+#             frappe.response["data"] = None
+#             return
+
+#         holidays = frappe.get_all(
+#             "Holiday",
+#             filters={"parent": holiday_list_name, "weekly_off": 0},
+#             fields=["holiday_date", "description", "weekly_off"],
+#             order_by="holiday_date asc"
+#         )
+
+#         for holiday in holidays:
+#             holiday["description"] = strip_html(holiday["description"] or "")
+
+#         frappe.response["status"] = True
+#         frappe.response["message"] = f"Holidays (excluding weekly offs) fetched for: {holiday_list_name}"
+#         frappe.response["summary"] = {
+#             "total_non_weekly_off_holidays": len(holidays)
+#         }
+#         frappe.response["data"] = holidays
+
+#     except Exception as e:
+#         frappe.response["status"] = False
+#         frappe.response["message"] = str(e)
+#         frappe.response["data"] = None
+
+
+import frappe
+from frappe.utils.html_utils import strip_html
+
+@frappe.whitelist(allow_guest=False)  # better security
 def get_holiday_list():
     try:
+        # ✅ Allow only GET
         if frappe.request.method != "GET":
             frappe.local.response["http_status_code"] = 405
             frappe.local.response["status"] = False
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
             return
+
+        # ✅ Get logged-in user → Employee
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+
         if not employee:
             frappe.response["status"] = False
-            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["message"] = f"No Employee linked with this user: {user}"
             frappe.response["data"] = None
             return
-        if employee:
-            employee_doc = frappe.get_doc("Employee", employee)
-            holiday_list_name = employee_doc.holiday_list
 
+        # ✅ Get holiday list from Employee Doc
+        holiday_list_name = frappe.db.get_value("Employee", employee, "holiday_list")
         if not holiday_list_name:
             frappe.response["status"] = False
-            frappe.response["message"] = "No holiday list found for given input"
+            frappe.response["message"] = "No holiday list found for this employee"
             frappe.response["data"] = None
             return
 
+        # ✅ Fetch holidays
         holidays = frappe.get_all(
             "Holiday",
             filters={"parent": holiday_list_name, "weekly_off": 0},
@@ -35,20 +91,20 @@ def get_holiday_list():
             order_by="holiday_date asc"
         )
 
+        # ✅ Clean description
         for holiday in holidays:
             holiday["description"] = strip_html(holiday["description"] or "")
 
         frappe.response["status"] = True
         frappe.response["message"] = f"Holidays (excluding weekly offs) fetched for: {holiday_list_name}"
-        frappe.response["summary"] = {
-            "total_non_weekly_off_holidays": len(holidays)
-        }
+        frappe.response["summary"] = {"total_non_weekly_off_holidays": len(holidays)}
         frappe.response["data"] = holidays
 
     except Exception as e:
         frappe.response["status"] = False
         frappe.response["message"] = str(e)
         frappe.response["data"] = None
+
 
 @frappe.whitelist(allow_guest=False)
 def get_employee_birthdays():
