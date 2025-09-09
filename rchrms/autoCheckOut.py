@@ -12,7 +12,7 @@ def auto_checkout():
             "log_type": "IN",
              "time": [">=", start_of_day]
         },
-        fields=["name", "employee", "time"]
+        fields=["name", "employee", "time", "latitude", "longitude", "checkin_image"]
     )
  
     for checkin in checkins:
@@ -28,6 +28,9 @@ def auto_checkout():
                 "employee": checkin.employee,
                 "log_type": "OUT",
                 "time": now_datetime(),
+                "latitude":checkin.latitude,
+                "longitude": checkin.longitude,
+                "checkin_image":checkin.checkin_image,
                 "skip_auto_attendance": 0
             }).insert(ignore_permissions=True)
             frappe.db.commit()
