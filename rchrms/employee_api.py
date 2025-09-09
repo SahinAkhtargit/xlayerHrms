@@ -5,6 +5,7 @@ import math
 import base64
 from frappe.utils.file_manager import save_file
 from frappe.utils import get_first_day, get_last_day
+from frappe.utils import getdate, add_days
 
 
 @frappe.whitelist(allow_guest=False)
@@ -961,6 +962,7 @@ def get_attendance_requests():
                 "company",
                 "from_date",
                 "to_date",
+                "custom_days"
                 "docstatus",
                 "half_day",
                 "half_day_date",
@@ -1045,6 +1047,50 @@ def post_attendance_request():
         frappe.response["status"]=False
         frappe.response["message"]=str(e)
         frappe.response["data"]=None
+
+def calculate_custom_days(doc, method=None):
+    if not doc.from_date or not doc.to_date:
+        return
+
+    from_date = getdate(doc.from_date)
+    to_date = getdate(doc.to_date)
+
+    # Get Holiday List from Employee or Company
+    holiday_list = None
+    if doc.employee:
+        holiday_list = frappe.db.get_value("Employee", doc.employee, "holiday_list")
+    if not holiday_list and doc.company:
+        holiday_list = frappe.db.get_value("Company", doc.company, "default_holiday_list")
+
+    holidays = set()
+    if holiday_list:
+        holidays = {
+            getdate(h.holiday_date)
+            for h in frappe.get_all(
+                "Holiday",
+                filters={"parent": holiday_list},
+                fields=["holiday_date"]
+            )
+        }
+
+    # Count days
+    total_days = 0
+    current = from_date
+    while current <= to_date:
+        if doc.include_holidays:
+            total_days += 1
+        else:
+            if current not in holidays:
+                total_days += 1
+        current = add_days(current, 1)
+
+    # Apply half day adjustment
+    if doc.half_day and total_days > 0:
+        total_days -= 0.5
+
+    # Update field
+    doc.custom_days = total_days
+
 
 @frappe.whitelist(allow_guest=False)
 def update_attendance_request():

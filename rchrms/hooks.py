@@ -27,6 +27,12 @@ doc_events = {
 override_doctype_class = {
     "Leave Application": "rchrms.leaveAttendance.CustomLeaveApplication"
 }
+doc_events = {
+    "Attendance Request": {
+        "before_save": "rchrms.employee_api.calculate_custom_days"
+    }
+}
+
 
 
 # required_apps = []
