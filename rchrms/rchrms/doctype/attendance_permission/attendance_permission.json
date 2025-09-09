@@ -36,6 +36,7 @@
    "options": "Employee"
   },
   {
+   "fetch_from": "employee.designation",
    "fieldname": "designation",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -61,7 +62,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-04 16:43:29.960217",
+ "modified": "2025-09-05 15:50:05.229338",
  "modified_by": "Administrator",
  "module": "Rchrms",
  "name": "Attendance Permission",

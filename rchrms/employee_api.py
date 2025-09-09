@@ -962,7 +962,7 @@ def get_attendance_requests():
                 "company",
                 "from_date",
                 "to_date",
-                "custom_days"
+                "custom_days",
                 "docstatus",
                 "half_day",
                 "half_day_date",
