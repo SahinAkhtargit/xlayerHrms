@@ -4,6 +4,7 @@ from frappe.utils import nowdate
 import math
 import base64
 from frappe.utils.file_manager import save_file
+from frappe.utils import get_first_day, get_last_day
 
 
 @frappe.whitelist(allow_guest=False)
@@ -12,7 +13,11 @@ def create_employee(**kwargs):
         frappe.throw(_("Unauthorized access"), frappe.PermissionError)
 
     try:
-        # Uniqueness Checks
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         if kwargs.get("personal_email") and frappe.db.exists("Employee", {"personal_email": kwargs.get("personal_email")}):
             frappe.response["status"] = False
             frappe.response["message"] = "Duplicate entry not allowed: personal_email already exists"
@@ -62,9 +67,22 @@ def get_all_employees(email=None):
         frappe.throw(_("Unauthorized access"), frappe.PermissionError)
 
     try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
         filters = {}
+
         if email:
-            filters["prefered_email"] = email
+            filters["employee"] = employee
         employees = frappe.get_all("Employee", filters=filters, fields=["*"])
        
         frappe.response["status"] = True
@@ -81,6 +99,11 @@ def update_employee(name, **kwargs):
         frappe.throw(_("Unauthorized access"), frappe.PermissionError)
 
     try:
+        if frappe.request.method != "PUT":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
+            frappe.local.response["data"] = None
         if not frappe.db.exists("Employee", name):
             frappe.response["status"] = False
             frappe.response["message"] = "Employee not found"
@@ -110,6 +133,11 @@ def delete_employee(name):
         frappe.throw(_("Unauthorized access"), frappe.PermissionError)
 
     try:
+        if frappe.request.method != "DELETE":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
+            frappe.local.response["data"] = None
         if not frappe.db.exists("Employee", name):
             frappe.response["status"] = False
             frappe.response["message"] = "Employee not found"
@@ -143,15 +171,41 @@ def delete_employee(name):
 
 
 @frappe.whitelist(allow_guest=False)
-def get_employee_checkins(employee=None, log_type=None):
+def get_employee_checkins(employee=None, log_type=None, month=None, year=None):
     try:
-        filters = {}
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
+            return
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
 
-        if employee:
-            filters["employee"] = employee
+        filters = {"employee": employee}
 
+        # Log type filter
         if log_type:
             filters["log_type"] = log_type
+
+        # ✅ Month-wise filter
+        if month and year:
+            try:
+                month = int(month)
+                year = int(year)
+                start_date = get_first_day(f"{year}-{month}-01")
+                end_date = get_last_day(f"{year}-{month}-01")
+                filters["time"] = ["between", [start_date, end_date]]
+            except Exception:
+                frappe.response["status"] = False
+                frappe.response["message"] = "Invalid month/year format"
+                frappe.response["data"] = None
+                return
 
         result = frappe.get_list(
             "Employee Checkin",
@@ -168,11 +222,12 @@ def get_employee_checkins(employee=None, log_type=None):
             limit_page_length=1000,
             order_by="time desc"
         )
-        total = len(result)
+
         frappe.response["status"] = True
         frappe.response["message"] = "Check-ins fetched successfully"
-        frappe.response["total_in_and_out"] = total
+        frappe.response["total_in_and_out"] = len(result)
         frappe.response["data"] = result
+
     except Exception as e:
         frappe.response["status"] = False
         frappe.response["message"] = str(e)
@@ -183,6 +238,11 @@ def get_employee_checkins(employee=None, log_type=None):
 @frappe.whitelist(allow_guest=False)
 def create_employee_checkin():
     try:
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
@@ -192,7 +252,7 @@ def create_employee_checkin():
             frappe.response["data"] = None
             return
 
-        required_fields = ["log_type", "time"]
+        required_fields = ["log_type", "time", "latitude", "longitude", "checkin_image"]
         for field in required_fields:
             if not data.get(field):
                 frappe.response["status"] = False
@@ -291,8 +351,20 @@ def get_distance_in_meters(lat1, lon1, lat2, lon2):
 
 
 @frappe.whitelist(allow_guest=False)
-def get_employee_attendance(employee=None):
+def get_employee_attendance():
     try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
         filters = {}
         if employee:
             filters["employee"] = employee
@@ -327,8 +399,20 @@ def get_employee_attendance(employee=None):
 
 from collections import Counter
 @frappe.whitelist(allow_guest=False)
-def get_leave_applications(employee=None):
+def get_leave_applications():
     try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
         filters = {}
         if employee:
             filters["employee"] = employee
@@ -374,6 +458,11 @@ def get_leave_applications(employee=None):
 @frappe.whitelist(allow_guest=False)
 def create_leave_application_for_admin():
     try:
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         required_fields = ["employee", "leave_type", "from_date", "to_date"]
@@ -412,10 +501,14 @@ def create_leave_application_for_admin():
 @frappe.whitelist(allow_guest=False)
 def create_leave_application():
     try:
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         user = frappe.session.user
-
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
         if not employee:
             frappe.response["status"] = False
@@ -459,6 +552,11 @@ def create_leave_application():
 @frappe.whitelist(allow_guest=False)
 def update_leave_application():
     try:
+        if frappe.request.method != "PUT":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -494,6 +592,11 @@ def update_leave_application():
 @frappe.whitelist(allow_guest=False)
 def delete_leave_application():
     try:
+        if frappe.request.method != "DELETE":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -529,8 +632,20 @@ def delete_leave_application():
 ############## Request Work From Home API's Start ########
 
 @frappe.whitelist(allow_guest=False)
-def get_work_from_home_request(employee=None):
+def get_work_from_home_request():
     try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
         filters = {}
         if employee:
             filters["employee"] = employee
@@ -574,6 +689,11 @@ def get_work_from_home_request(employee=None):
 @frappe.whitelist(allow_guest=False)
 def create_work_from_home_requests():
     try:
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
         user = frappe.session.user
 
@@ -602,7 +722,7 @@ def create_work_from_home_requests():
                 (from_date >= %s AND to_date <= %s)
             )
         """, (
-            data.get("employee"),
+            employee,
             data.get("from_date"), data.get("from_date"),
             data.get("to_date"), data.get("to_date"),
             data.get("from_date"), data.get("to_date")
@@ -616,7 +736,7 @@ def create_work_from_home_requests():
 
         # Create new request
         doc = frappe.new_doc("Request Work From Home")
-        doc.employee = data.get("employee")
+        doc.employee = employee
         doc.from_date = data.get("from_date")
         doc.to_date = data.get("to_date")
         doc.reason = data.get("reason")
@@ -643,6 +763,11 @@ def create_work_from_home_requests():
 @frappe.whitelist(allow_guest=False)
 def create_work_from_home_requests_for_admin():
     try:
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         required_fields = ["employee", "from_date", "to_date", "reason"]
@@ -706,6 +831,11 @@ def create_work_from_home_requests_for_admin():
 @frappe.whitelist(allow_guest=False)
 def update_work_from_home_request():
     try:
+        if frappe.request.method != "PUT":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -746,6 +876,11 @@ def update_work_from_home_request():
 @frappe.whitelist(allow_guest=False)
 def delete_work_from_home_request():
     try:
+        if frappe.request.method != "DELETE":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -780,8 +915,20 @@ def delete_work_from_home_request():
 ########### Attendance Request API's Start ############
 
 @frappe.whitelist(allow_guest=False)
-def get_attendance_requests(employee=None):
+def get_attendance_requests():
     try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
         filters = {}
         if employee:
             filters["employee"] = employee
@@ -827,9 +974,21 @@ def get_attendance_requests(employee=None):
 @frappe.whitelist(allow_guest=False)
 def post_attendance_request():
     try:
+        if frappe.request.method != "POST":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use POST request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
 
-        required_fields = ["employee", "from_date", "to_date", "reason"]
+        required_fields = ["from_date", "to_date", "reason"]
         for field in required_fields:
             if not data.get(field):
                 frappe.response["status"]=False
@@ -837,7 +996,7 @@ def post_attendance_request():
                 frappe.response["data"]=None
 
         doc = frappe.new_doc("Attendance Request")
-        doc.employee = data.get("employee")
+        doc.employee = employee
         doc.from_date = data.get("from_date")
         doc.to_date = data.get("to_date")
         doc.reason = data.get("reason")
@@ -872,6 +1031,11 @@ def post_attendance_request():
 @frappe.whitelist(allow_guest=False)
 def update_attendance_request():
     try:
+        if frappe.request.method != "PUT":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use PUT request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -906,6 +1070,11 @@ def update_attendance_request():
 @frappe.whitelist(allow_guest=False)
 def delete_attendance_request():
     try:
+        if frappe.request.method != "DELETE":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use DELETE request."
+            frappe.local.response["data"] = None
         data = frappe.local.form_dict
 
         if not data.get("name"):
@@ -929,31 +1098,43 @@ def delete_attendance_request():
         frappe.response["data"]=None
 ######Attendance Request API Ends ################
 
-# @frappe.whitelist(allow_guest=False)
-# def get_leave_dashboard(employee, date=None):
-#     from hrms.hr.doctype.leave_application.leave_application import get_leave_details
+@frappe.whitelist(allow_guest=False)
+def get_leave_allocation():
+    from hrms.hr.doctype.leave_application.leave_application import get_leave_details
 
-#     try:
-#         if not date:
-#             date = frappe.utils.today()
+    try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
 
-#         result = get_leave_details(employee=employee, date=date)
+        user = frappe.session.user
+        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        if not employee:
+            frappe.response["status"] = False
+            frappe.response["message"] = "No Employee linked with this user"
+            frappe.response["data"] = None
+            return
+    
+        date = frappe.utils.today()
 
-#         leave_allocation = result.get("leave_allocation", {})
-#         lwps = result.get("lwps", [])
-        
-#         frappe.response["status"]=True
-#         frappe.response["message"]="Leave dashboard data fetched"
-#         frappe.response["data"]={
-#                 "leave_allocation": leave_allocation,
-#                 "lwps": lwps,
-#                 "allowed_leave_types": list(leave_allocation.keys()) + lwps
-#             }
+        result = get_leave_details(employee=employee, date=date)
+        leave_allocation = result.get("leave_allocation", {})
+        lwps = result.get("lwps", [])
 
-#     except Exception as e:
-#         frappe.response["status"]=False
-#         frappe.response["message"]=str(e)
-#         frappe.response["data"]=None
+        frappe.response["status"] = True
+        frappe.response["message"] = "Leave dashboard data fetched"
+        frappe.response["data"] = {
+            "leave_allocation": leave_allocation,
+            "lwps": lwps,
+            "allowed_leave_types": list(leave_allocation.keys()) + lwps
+        }
+
+    except Exception as e:
+        frappe.response["status"] = False
+        frappe.response["message"] = str(e)
+        frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
 def get_leave_dashboard(employee=None, date=None):
