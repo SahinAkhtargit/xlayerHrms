@@ -438,6 +438,7 @@ def get_leave_applications():
                 "posting_date",
                 "half_day",
                 "half_day_date",
+                "custom_session",
                 "status",
                 "workflow_state",
                 "description",
@@ -541,6 +542,7 @@ def create_leave_application():
         doc.from_date = data.get("from_date")
         doc.to_date = data.get("to_date")
         doc.company = data.get("company")
+        doc.custom_session = data.get("custom_session")
         doc.half_day = int(data.get("half_day") or 0)
         doc.half_day_date = data.get("half_day_date") if doc.half_day else None
         doc.description = data.get("description") or ""
@@ -578,7 +580,7 @@ def update_leave_application():
         doc = frappe.get_doc("Leave Application", data.get("name"))
 
         updatable_fields = [
-            "from_date", "to_date", "leave_type", "half_day",
+            "from_date", "to_date", "leave_type", "half_day","custom_session",
             "half_day_date", "description", "company"
         ]
         for field in updatable_fields:
