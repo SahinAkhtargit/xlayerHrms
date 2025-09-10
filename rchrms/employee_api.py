@@ -297,7 +297,7 @@ def create_employee_checkin():
         doc.longitude = data.get("longitude")
         doc.device_id = data.get("device_id")
         doc.skip_auto_attendance = frappe.utils.cint(data.get("skip_auto_attendance") or 0)
-
+        doc.insert(ignore_permissions=True)
         base64_image = data.get("checkin_image")
         if base64_image:
             decoded = base64.b64decode(base64_image)
@@ -314,9 +314,10 @@ def create_employee_checkin():
             # Assign file_url to the doc
             if file_doc:
                 doc.checkin_image = file_doc.file_url
+                doc.save(ignore_permissions=True)
 
         # Insert only once
-        doc.insert(ignore_permissions=True)
+        #doc.insert(ignore_permissions=True)
         frappe.db.commit()
 
         frappe.response["status"] = True
