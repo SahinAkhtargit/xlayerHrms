@@ -249,9 +249,11 @@ def create_employee_checkin():
             frappe.local.response["message"] = "Method Not Allowed. Use POST request."
             frappe.local.response["data"] = None
             return
+
         data = frappe.local.form_dict
         user = frappe.session.user
         employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+
         if not employee:
             frappe.response["status"] = False
             frappe.response["message"] = "No Employee linked with this user"
@@ -266,42 +268,37 @@ def create_employee_checkin():
                 frappe.response["data"] = None
                 return
 
+        # HR config geo-check
         hr_config = frappe.get_single("HR Config")
         if hr_config.geo_location_required:
             config_lat = float(hr_config.latitude)
             config_lon = float(hr_config.longitude)
             allowed_area = float(hr_config.allowed_area)
-            user_lat = data.get("latitude")
-            user_lon = data.get("longitude")
-
-            if not user_lat or not user_lon:
-                frappe.response["status"] = False
-                frappe.response["message"] = "Latitude and Longitude are required for check-in."
-                frappe.response["data"] = None
-                return
-
-            user_lat = float(user_lat)
-            user_lon = float(user_lon)
+            user_lat = float(data.get("latitude"))
+            user_lon = float(data.get("longitude"))
 
             distance = get_distance_in_meters(config_lat, config_lon, user_lat, user_lon)
 
             if distance > allowed_area:
                 frappe.response["status"] = False
-                frappe.response["message"] = f"You are outside the allowed check-in area. Distance: {round(distance, 2)}m, Allowed: {allowed_area}m."
+                frappe.response["message"] = (
+                    f"You are outside the allowed check-in area. "
+                    f"Distance: {round(distance, 2)}m, Allowed: {allowed_area}m."
+                )
                 frappe.response["data"] = None
                 return
 
+        # Create the checkin doc
         doc = frappe.new_doc("Employee Checkin")
         doc.employee = employee
-        doc.log_type = data.get("log_type") 
+        doc.log_type = data.get("log_type")
         doc.time = data.get("time")
         doc.latitude = data.get("latitude")
         doc.longitude = data.get("longitude")
         doc.device_id = data.get("device_id")
         doc.skip_auto_attendance = frappe.utils.cint(data.get("skip_auto_attendance") or 0)
-        doc.insert(ignore_permissions=True)
+
         base64_image = data.get("checkin_image")
-        
         if base64_image:
             decoded = base64.b64decode(base64_image)
             filename = f"checkin_{doc.employee}_{frappe.utils.now_datetime().strftime('%Y%m%d%H%M%S')}.png"
@@ -310,15 +307,17 @@ def create_employee_checkin():
                 filename,
                 decoded,
                 "Employee Checkin",
-                doc.name,
+                doc.name if doc.name else None,  # file linked after insert
                 folder=None,
                 is_private=1
             )
-
+            # Assign file_url to the doc
             if file_doc:
                 doc.checkin_image = file_doc.file_url
-                doc.save(ignore_permissions=True)
-            frappe.db.commit()
+
+        # Insert only once
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
 
         frappe.response["status"] = True
         frappe.response["message"] = "Employee Checkin created successfully"
@@ -329,7 +328,7 @@ def create_employee_checkin():
             "time": doc.time,
             "device_id": doc.device_id,
             "skip_auto_attendance": doc.skip_auto_attendance,
-            "checkin_image": doc.checkin_image
+            "checkin_image": doc.checkin_image,
         }
 
     except Exception as e:
@@ -337,6 +336,7 @@ def create_employee_checkin():
         frappe.response["status"] = False
         frappe.response["message"] = str(e)
         frappe.response["data"] = None
+
 
 
 def get_distance_in_meters(lat1, lon1, lat2, lon2):
