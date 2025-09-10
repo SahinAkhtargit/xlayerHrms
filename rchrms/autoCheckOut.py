@@ -2,35 +2,34 @@ import frappe
 from frappe.utils import now_datetime, getdate
 from datetime import datetime, timedelta, time
 def auto_checkout():
-    
     today = getdate(now_datetime())
     start_of_day = datetime.combine(today, datetime.min.time())
- 
+
     checkins = frappe.get_all(
         "Employee Checkin",
         filters={
             "log_type": "IN",
-             "time": [">=", start_of_day]
+            "time": [">=", start_of_day]
         },
         fields=["name", "employee", "time", "latitude", "longitude", "checkin_image"]
     )
- 
+
     for checkin in checkins:
         out_exists = frappe.db.exists("Employee Checkin", {
-            "employee": checkin.employee,
+            "employee": checkin["employee"],
             "log_type": "OUT",
-            "time": [">", checkin.time]
+            "time": [">", checkin["time"]]
         })
- 
+
         if not out_exists:
             frappe.get_doc({
                 "doctype": "Employee Checkin",
-                "employee": checkin.employee,
+                "employee": checkin["employee"],
                 "log_type": "OUT",
                 "time": now_datetime(),
-                "latitude":checkin.latitude,
-                "longitude": checkin.longitude,
-                "checkin_image":checkin.checkin_image,
+                "latitude": checkin["latitude"],
+                "longitude": checkin["longitude"],
+                "checkin_image": checkin["checkin_image"],
                 "skip_auto_attendance": 0
             }).insert(ignore_permissions=True)
             frappe.db.commit()
