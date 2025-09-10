@@ -487,6 +487,7 @@ def create_leave_application_for_admin():
         doc.leave_type = data.get("leave_type")
         doc.from_date = data.get("from_date")
         doc.to_date = data.get("to_date")
+        doc.custom_session = data.get("custom_session")
         doc.company = data.get("company")
         doc.half_day = int(data.get("half_day") or 0)
         doc.half_day_date = data.get("half_day_date") if doc.half_day else None
