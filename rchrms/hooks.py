@@ -10,7 +10,7 @@ app_license = "mit"
 
 scheduler_events = {
     "cron": {
-        "27 21 * * *": ["rchrms.autoCheckOut.auto_checkout"],
+        "17 12 * * *": ["rchrms.autoCheckOut.auto_checkout"],
         # "30 22 * * *": ["rchrms.autoCheckOut.autoAttendance"],
     },
     "daily": [
