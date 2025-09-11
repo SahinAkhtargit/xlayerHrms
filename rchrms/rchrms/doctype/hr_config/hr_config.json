@@ -11,8 +11,8 @@
   "latitude",
   "longitude",
   "allowed_area",
-  "attendance_configuration_section",
-  "attendance_config_data"
+  "check_inout_permissions_section",
+  "checkinout_permission_config"
  ],
  "fields": [
   {
@@ -52,21 +52,21 @@
    "label": "Allowed Area"
   },
   {
-   "fieldname": "attendance_configuration_section",
+   "fieldname": "check_inout_permissions_section",
    "fieldtype": "Section Break",
-   "label": "Attendance Configuration"
+   "label": "Check In/Out Permissions"
   },
   {
-   "fieldname": "attendance_config_data",
+   "fieldname": "checkinout_permission_config",
    "fieldtype": "Table",
-   "label": "Attendance Config data",
-   "options": "CheckInOut Config Table"
+   "label": "CheckInOut Permission Config",
+   "options": "CheckInOut Permission Table"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-09-04 16:48:51.640446",
+ "modified": "2025-09-11 19:08:06.430530",
  "modified_by": "Administrator",
  "module": "Rchrms",
  "name": "HR Config",
@@ -83,6 +83,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

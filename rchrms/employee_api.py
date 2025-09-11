@@ -438,6 +438,7 @@ def get_leave_applications():
                 "to_date",
                 "posting_date",
                 "half_day",
+                "total_leave_days",
                 "half_day_date",
                 "custom_session",
                 "status",

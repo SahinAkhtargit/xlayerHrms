@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class CheckInOutConfigTable(Document):
+class CheckInOutPermission(Document):
 	pass
