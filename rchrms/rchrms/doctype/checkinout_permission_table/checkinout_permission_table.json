@@ -18,7 +18,8 @@
    "fieldname": "late_early_validation",
    "fieldtype": "Check",
    "in_list_view": 1,
-   "label": "late_early_validation"
+   "label": "late_early_validation",
+   "read_only": 1
   },
   {
    "columns": 2,
@@ -26,7 +27,8 @@
    "fieldname": "image_required",
    "fieldtype": "Check",
    "in_list_view": 1,
-   "label": "Image Required?"
+   "label": "Image Required?",
+   "read_only": 1
   },
   {
    "columns": 2,
@@ -34,14 +36,15 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Doc Link",
-   "options": "CheckInOut Permission"
+   "options": "CheckInOut Permission",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-11 19:08:45.860884",
+ "modified": "2025-09-12 12:29:15.863877",
  "modified_by": "Administrator",
  "module": "Rchrms",
  "name": "CheckInOut Permission Table",

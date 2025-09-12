@@ -6,8 +6,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "employee",
   "designation",
+  "employee",
   "late_early_validation",
   "image_required"
  ],
@@ -22,7 +22,8 @@
    "fieldname": "designation",
    "fieldtype": "Table MultiSelect",
    "label": "Designation",
-   "options": "Multiselect Designation Child Table"
+   "options": "Multiselect Designation Child Table",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -42,7 +43,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-11 19:01:20.990151",
+ "modified": "2025-09-12 12:09:52.828158",
  "modified_by": "Administrator",
  "module": "Rchrms",
  "name": "CheckInOut Permission",

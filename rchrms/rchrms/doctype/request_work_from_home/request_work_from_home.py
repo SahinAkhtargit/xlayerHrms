@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from datetime import datetime, date, timedelta
-from frappe.utils import getdate
+from frappe.utils import getdate, add_days
 #class RequestWorkFromHome(Document):
 #	pass
 class RequestWorkFromHome(Document):
@@ -13,18 +13,59 @@ class RequestWorkFromHome(Document):
             self.name = f"{self.employee}-{self.from_date}"
         else:
             frappe.throw("Both Employee and Dates are required for naming")
+    # def before_save(self):
+    #     if self.from_date and self.to_date:
+    #         from_date = getdate(self.from_date)
+    #         to_date = getdate(self.to_date)
+
+    #         diff = (to_date - from_date).days + 1
+
+    #         if diff > 0:
+    #             self.days = diff
+    #         else:
+    #             self.days = 0
+    #             frappe.throw("To Date must be after From Date")
     def before_save(self):
-        if self.from_date and self.to_date:
-            from_date = getdate(self.from_date)
-            to_date = getdate(self.to_date)
 
-            diff = (to_date - from_date).days + 1
+        if not self.from_date or not self.to_date:
+            return
 
-            if diff > 0:
-                self.days = diff
+        from_date = getdate(self.from_date)
+        to_date = getdate(self.to_date)
+
+        if to_date < from_date:
+            self.days = 0
+            frappe.throw("To Date must be after From Date")
+
+        holiday_list = None
+        if self.employee:
+            holiday_list = frappe.db.get_value("Employee", self.employee, "holiday_list")
+        if not holiday_list and self.company:
+            holiday_list = frappe.db.get_value("Company", self.company, "default_holiday_list")
+
+        holidays = set()
+        if holiday_list:
+            holidays = {
+                getdate(h.holiday_date)
+                for h in frappe.get_all(
+                    "Holiday",
+                    filters={"parent": holiday_list},
+                    fields=["holiday_date"]
+                )
+            }
+
+        total_days = 0
+        current = from_date
+        while current <= to_date:
+            if self.include_holidays:
+                total_days += 1
             else:
-                self.days = 0
-                frappe.throw("To Date must be after From Date")
+                if current not in holidays:
+                    total_days += 1
+            current = add_days(current, 1)
+
+        self.days = total_days
+
 
 
     def validate(self):
