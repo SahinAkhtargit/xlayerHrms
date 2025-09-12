@@ -54,18 +54,15 @@ class RequestWorkFromHome(Document):
                 )
             }
 
+        # --- count days (no include_holidays option) ---
         total_days = 0
         current = from_date
         while current <= to_date:
-            if self.include_holidays:
+            if current not in holidays:   # skip holidays always
                 total_days += 1
-            else:
-                if current not in holidays:
-                    total_days += 1
             current = add_days(current, 1)
 
         self.days = total_days
-
 
 
     def validate(self):
