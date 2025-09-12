@@ -44,8 +44,10 @@ def get_holiday_list():
         frappe.response["data"] = holidays
 
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 
@@ -94,7 +96,9 @@ def get_employee_birthdays():
         frappe.response["data"] = upcoming_birthdays
 
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
                                        

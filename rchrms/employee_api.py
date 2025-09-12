@@ -2,6 +2,7 @@ import frappe
 from frappe import _
 from frappe.utils import nowdate
 import math
+import re
 import base64
 from frappe.utils.file_manager import save_file
 from frappe.utils import get_first_day, get_last_day
@@ -58,8 +59,10 @@ def create_employee(**kwargs):
         frappe.response["data"] = employee.as_dict()
 
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 
@@ -92,8 +95,10 @@ def get_all_employees(email=None):
         frappe.response["message"] = "Employees fetched successfully"
         frappe.response["data"] = employees
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
@@ -127,8 +132,10 @@ def update_employee(name, **kwargs):
         frappe.response["message"] = "Employee updated successfully"
         frappe.response["data"] = doc.as_dict()
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
@@ -170,8 +177,10 @@ def delete_employee(name):
         frappe.response["data"] = {"employee": name, "user": linked_user}
 
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 
@@ -234,8 +243,10 @@ def get_employee_checkins(employee=None, log_type=None, month=None, year=None):
         frappe.response["data"] = result
 
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 
@@ -334,8 +345,10 @@ def create_employee_checkin():
 
     except Exception as e:
         frappe.db.rollback()
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 
@@ -399,9 +412,11 @@ def get_employee_attendance():
         frappe.response["data"] = attendance_records
 
     except Exception as e:
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 #################### Leave Application API's Start ##############
 
@@ -462,9 +477,11 @@ def get_leave_applications():
         frappe.response["data"]=leave_apps
 
     except Exception as e:
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
 def create_leave_application_for_admin():
@@ -506,9 +523,11 @@ def create_leave_application_for_admin():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 
 @frappe.whitelist(allow_guest=False)
@@ -559,8 +578,10 @@ def create_leave_application():
 
     except Exception as e:
         frappe.db.rollback()
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 
@@ -601,9 +622,11 @@ def update_leave_application():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
 def delete_leave_application():
@@ -639,10 +662,11 @@ def delete_leave_application():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
-
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 ############## Leave Application API's End #############
 
@@ -700,9 +724,11 @@ def get_work_from_home_request():
         frappe.response["data"]=leave_apps
 
     except Exception as e:
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
 def create_work_from_home_requests():
@@ -775,8 +801,10 @@ def create_work_from_home_requests():
 
     except Exception as e:
         frappe.db.rollback()
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
@@ -842,10 +870,11 @@ def create_work_from_home_requests_for_admin():
 
     except Exception as e:
         frappe.db.rollback()
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
-
 
 
 @frappe.whitelist(allow_guest=False)
@@ -889,9 +918,11 @@ def update_work_from_home_request():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 
 @frappe.whitelist(allow_guest=False)
@@ -928,9 +959,11 @@ def delete_work_from_home_request():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 ############# Request Work From Home API's End #############
 
@@ -990,9 +1023,11 @@ def get_attendance_requests():
         frappe.response["data"]=requests
 
     except Exception as e:
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 
 @frappe.whitelist(allow_guest=False)
@@ -1049,9 +1084,11 @@ def post_attendance_request():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 
 def calculate_custom_days(doc, method=None):
     if not doc.from_date or not doc.to_date:
@@ -1134,9 +1171,11 @@ def update_attendance_request():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=False
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 @frappe.whitelist(allow_guest=False)
 def delete_attendance_request():
     try:
@@ -1164,9 +1203,11 @@ def delete_attendance_request():
 
     except Exception as e:
         frappe.db.rollback()
-        frappe.response["status"]=True
-        frappe.response["message"]=str(e)
-        frappe.response["data"]=None
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
 ######Attendance Request API Ends ################
 
 @frappe.whitelist(allow_guest=False)
@@ -1204,8 +1245,10 @@ def get_leave_allocation():
         }
 
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 @frappe.whitelist(allow_guest=False)
@@ -1241,8 +1284,10 @@ def get_leave_dashboard(employee=None, date=None):
         }
 
     except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
         frappe.response["status"] = False
-        frappe.response["message"] = str(e)
+        frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
 
 
