@@ -20,14 +20,16 @@ def get_all_employees(email=None, employee=None):
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
             return
-        user = frappe.session.user
-        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
-        if not employee:
-            frappe.response["status"] = False
-            frappe.response["message"] = "No Employee linked with this user"
-            frappe.response["data"] = None
-            return
+        # user = frappe.session.user
+        # employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        # if not employee:
+        #     frappe.response["status"] = False
+        #     frappe.response["message"] = "No Employee linked with this user"
+        #     frappe.response["data"] = None
+        #     return
         filters = {}
+        if employee:
+            filters["employee"] = employee
 
         if email:
             filters["employee"] = employee
@@ -274,7 +276,7 @@ def get_distance_in_meters(lat1, lon1, lat2, lon2):
 
 from collections import Counter
 @frappe.whitelist(allow_guest=False)
-def get_leave_applications():
+def get_leave_applications(employee=None):
     try:
         if frappe.request.method != "GET":
             frappe.local.response["http_status_code"] = 405
@@ -282,13 +284,13 @@ def get_leave_applications():
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
             return
-        user = frappe.session.user
-        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
-        if not employee:
-            frappe.response["status"] = False
-            frappe.response["message"] = "Unable to fetch please try again"
-            frappe.response["data"] = None
-            return
+        # user = frappe.session.user
+        # employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        # if not employee:
+        #     frappe.response["status"] = False
+        #     frappe.response["message"] = "Unable to fetch please try again"
+        #     frappe.response["data"] = None
+        #     return
         filters = {}
         if employee:
             filters["employee"] = employee
@@ -474,7 +476,7 @@ def delete_leave_application():
 ############# Request Work From Home API's Start ########
 
 @frappe.whitelist(allow_guest=False)
-def get_work_from_home_request(employee):
+def get_work_from_home_request(employee=None):
     try:
         if frappe.request.method != "GET":
             frappe.local.response["http_status_code"] = 405
@@ -482,11 +484,11 @@ def get_work_from_home_request(employee):
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
             return
-        if not employee:
-            frappe.response["status"] = False
-            frappe.response["message"] = "Unable to fetch please try again"
-            frappe.response["data"] = None
-            return
+        # if not employee:
+        #     frappe.response["status"] = False
+        #     frappe.response["message"] = "Unable to fetch please try again"
+        #     frappe.response["data"] = None
+        #     return
         filters = {}
         if employee:
             filters["employee"] = employee
@@ -692,7 +694,7 @@ def delete_work_from_home_request():
 ########### Attendance Request API's Start ############
 
 @frappe.whitelist(allow_guest=False)
-def get_attendance_requests(employee):
+def get_attendance_requests(employee=None):
     try:
         if frappe.request.method != "GET":
             frappe.local.response["http_status_code"] = 405
@@ -702,11 +704,11 @@ def get_attendance_requests(employee):
             return
 
     
-        if not employee:
-            frappe.response["status"] = False
-            frappe.response["message"] = "Unable to fetch please try again"
-            frappe.response["data"] = None
-            return
+        # if not employee:
+        #     frappe.response["status"] = False
+        #     frappe.response["message"] = "Unable to fetch please try again"
+        #     frappe.response["data"] = None
+        #     return
         filters = {}
         if employee:
             filters["employee"] = employee
