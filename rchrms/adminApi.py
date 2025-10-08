@@ -90,19 +90,21 @@ def get_employee_checkins(employee=None, log_type=None, month=None, year=None):
             frappe.local.response["message"] = "Method Not Allowed. Use GET request."
             frappe.local.response["data"] = None
             return
-        user = frappe.session.user
-        employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
-        if not employee:
-            frappe.response["status"] = False
-            frappe.response["message"] = "No Employee linked with this user"
-            frappe.response["data"] = None
-            return
+        #user = frappe.session.user
+        #employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        #if not employee:
+        #    frappe.response["status"] = False
+        #    frappe.response["message"] = "No Employee linked with this user"
+        #    frappe.response["data"] = None
+        #    return
 
-        filters = {"employee": employee}
+        filters = {}
 
         # Log type filter
         if log_type:
             filters["log_type"] = log_type
+        if employee:
+            filters["employee"] = employee
 
         # ✅ Month-wise filter
         if month and year:
