@@ -936,3 +936,53 @@ def get_leave_dashboard(employee=None):
         frappe.response["status"] = False
         frappe.response["message"] = clean_message.strip()
         frappe.response["data"] = None
+
+
+@frappe.whitelist(allow_guest=False)
+def get_employee_attendance(employee=None):
+    try:
+        if frappe.request.method != "GET":
+            frappe.local.response["http_status_code"] = 405
+            frappe.local.response["status"] = False
+            frappe.local.response["message"] = "Method Not Allowed. Use GET request."
+            frappe.local.response["data"] = None
+            return
+        #user = frappe.session.user
+        #employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+        #if not employee:
+        #    frappe.response["status"] = False
+        #    frappe.response["message"] = "No Employee linked with this user"
+        #    frappe.response["data"] = None
+        #    return
+        filters = {}
+        if employee:
+            filters["employee"] = employee
+        attendance_records = frappe.get_list(
+            "Attendance",
+            filters=filters,
+            fields=[
+                "name",
+                "employee",
+                "employee_name",
+                "attendance_date",
+                "status",
+                "shift",
+                "company",
+                "workflow_state"
+            ],
+            order_by="attendance_date desc",
+            limit_page_length=1000
+        )
+        total = len(attendance_records)
+        frappe.response["status"] = True
+        frappe.response["message"] = "Attendance records fetched successfully"
+        frappe.response["total_attendance"] = total
+        frappe.response["data"] = attendance_records
+
+    except Exception as e:
+        raw_message = str(e)
+        clean_message = re.sub(r"<.*?>", "", raw_message)
+        frappe.response["status"] = False
+        frappe.response["message"] = clean_message.strip()
+        frappe.response["data"] = None
+
